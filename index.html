@@ -2,48 +2,49 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Stage Management Show Tracker</title>
+  <title>Show Caller – Time & PDF Reports</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- pdf-lib for filling the template PDF -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <style>
     :root {
-      --bg: #0b0e12;
-      --bg-elevated: #141922;
-      --bg-elevated-soft: #181e29;
+      --bg: #05070d;
+      --bg-elevated: #101521;
       --accent: #4ea3ff;
-      --accent-soft: rgba(78, 163, 255, 0.12);
-      --danger: #ff4e6a;
+      --accent-soft: rgba(78, 163, 255, 0.15);
       --text-main: #f5f7fb;
       --text-muted: #9aa3b8;
-      --border-subtle: #222a36;
-      --shadow-soft: 0 14px 40px rgba(0, 0, 0, 0.45);
+      --border-subtle: #232a3a;
+      --danger: #ff4e6a;
       --radius-lg: 12px;
-      --radius-md: 8px;
+      --radius-md: 9px;
       --radius-pill: 999px;
+      --shadow-soft: 0 16px 38px rgba(0, 0, 0, 0.6);
     }
 
     * {
       box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       margin: 0;
       padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     body {
-      background: radial-gradient(circle at top, #1d2736 0, #05060a 55%, #020308 100%);
-      color: var(--text-main);
       min-height: 100vh;
+      background: radial-gradient(circle at top, #1b2638 0, #02030a 55%, #010108 100%);
+      color: var(--text-main);
+      padding: 20px;
       display: flex;
       justify-content: center;
-      padding: 24px;
     }
 
-    .app-container {
+    .app {
       width: 100%;
-      max-width: 1100px;
-      background: linear-gradient(145deg, rgba(16, 22, 33, 0.98), rgba(10, 13, 21, 0.98));
+      max-width: 1200px;
+      background: linear-gradient(140deg, rgba(14, 20, 33, 0.98), rgba(7, 9, 16, 0.98));
       border-radius: 18px;
+      border: 1px solid rgba(139, 176, 240, 0.18);
       box-shadow: var(--shadow-soft);
-      border: 1px solid rgba(152, 191, 255, 0.08);
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -51,39 +52,38 @@
     }
 
     header {
-      padding: 18px 22px;
+      padding: 16px 20px;
       border-bottom: 1px solid var(--border-subtle);
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      background: linear-gradient(120deg, rgba(23, 40, 66, 0.9), rgba(11, 15, 24, 0.95));
+      align-items: center;
+      background: linear-gradient(120deg, #1c2740, #090c16);
     }
 
-    header .title-block {
+    .header-title {
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
 
-    header h1 {
-      font-size: 20px;
-      letter-spacing: 0.04em;
+    .header-title h1 {
+      font-size: 18px;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      font-weight: 600;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    header h1 span.logo-dot {
-      width: 8px;
-      height: 8px;
+    .logo-dot {
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
       background: var(--accent);
-      box-shadow: 0 0 12px rgba(78, 163, 255, 0.9);
+      box-shadow: 0 0 12px rgba(78, 163, 255, 0.8);
     }
 
-    header .subtitle {
+    .header-subtitle {
       font-size: 12px;
       color: var(--text-muted);
     }
@@ -96,107 +96,126 @@
 
     .pill-indicator {
       font-size: 11px;
-      padding: 4px 10px;
+      padding: 3px 9px;
       border-radius: var(--radius-pill);
-      background: rgba(13, 196, 135, 0.12);
-      color: #7de9be;
-      border: 1px solid rgba(125, 233, 190, 0.25);
+      border: 1px solid rgba(111, 192, 255, 0.7);
+      color: #a9d5ff;
+      background: rgba(9, 39, 68, 0.6);
       text-transform: uppercase;
       letter-spacing: 0.08em;
     }
 
-    button {
+    .btn {
       border: none;
       cursor: pointer;
       border-radius: var(--radius-md);
-      font-size: 14px;
+      font-size: 13px;
+      padding: 7px 12px;
       display: inline-flex;
       align-items: center;
-      justify-content: center;
       gap: 6px;
-      transition: background 0.16s ease, transform 0.08s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+      transition: transform 0.07s ease, background 0.16s ease, box-shadow 0.16s ease;
       white-space: nowrap;
     }
 
-    button:active {
+    .btn:active {
       transform: scale(0.97);
     }
 
     .btn-primary {
-      padding: 8px 14px;
-      background: radial-gradient(circle at top left, #63b0ff, #2674ff);
+      background: radial-gradient(circle at top left, #63b0ff, #236cff);
       color: #020308;
       font-weight: 600;
-      box-shadow: 0 10px 24px rgba(11, 119, 255, 0.4);
+      box-shadow: 0 10px 22px rgba(18, 111, 239, 0.5);
+      border-radius: var(--radius-pill);
     }
 
     .btn-primary:hover {
-      background: radial-gradient(circle at top left, #72b8ff, #2f7dff);
-      box-shadow: 0 12px 28px rgba(11, 119, 255, 0.55);
+      background: radial-gradient(circle at top left, #70b8ff, #2b75ff);
     }
 
     .btn-ghost {
-      padding: 8px 14px;
       background: transparent;
-      color: var(--text-muted);
       border-radius: var(--radius-pill);
-      border: 1px solid rgba(99, 110, 136, 0.65);
+      border: 1px solid rgba(94, 111, 151, 0.7);
+      color: var(--text-muted);
     }
 
     .btn-ghost:hover {
-      border-color: rgba(148, 159, 187, 0.95);
+      border-color: rgba(134, 153, 197, 0.95);
       color: var(--text-main);
-      background: rgba(36, 46, 70, 0.5);
+      background: rgba(29, 40, 66, 0.65);
     }
 
-    .main-layout {
+    .btn-small {
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(7, 9, 17, 0.9);
+      border: 1px solid rgba(73, 88, 122, 0.9);
+      color: var(--text-muted);
+    }
+
+    .btn-small:hover {
+      background: rgba(23, 29, 52, 0.95);
+      color: var(--text-main);
+      border-color: rgba(121, 141, 186, 0.95);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ff5c80, #ff2358);
+      border-color: rgba(255, 130, 153, 0.9);
+      color: #020307;
+      box-shadow: 0 10px 22px rgba(255, 60, 102, 0.6);
+    }
+
+    .btn-danger:hover {
+      background: linear-gradient(135deg, #ff708e, #ff3665);
+    }
+
+    .layout {
       flex: 1;
       display: grid;
-      grid-template-columns: minmax(0, 1.5fr) minmax(0, 2.1fr);
-      gap: 0;
-      height: 100%;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.8fr);
       min-height: 0;
     }
 
     .pane {
-      padding: 18px 20px;
+      padding: 16px 18px;
       overflow-y: auto;
       scrollbar-width: thin;
-      scrollbar-color: #39445a #101521;
+      scrollbar-color: #39445a #0a0e18;
     }
 
     .pane::-webkit-scrollbar {
       width: 8px;
     }
     .pane::-webkit-scrollbar-track {
-      background: #101521;
+      background: #05070f;
     }
     .pane::-webkit-scrollbar-thumb {
-      background: #374057;
+      background: #3a435f;
       border-radius: 4px;
-    }
-    .pane::-webkit-scrollbar-thumb:hover {
-      background: #4d5874;
     }
 
     .pane-left {
       border-right: 1px solid var(--border-subtle);
-      background: radial-gradient(circle at top left, #20283a 0, #111625 45%, #070a13 100%);
+      background: radial-gradient(circle at top left, #1c2435 0, #0b0f19 45%, #05060f 100%);
     }
 
     .pane-right {
-      background: radial-gradient(circle at top right, #182033 0, #0d111c 45%, #060812 100%);
+      background: radial-gradient(circle at top right, #182033 0, #080b14 45%, #02030a 100%);
     }
 
     .section-header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      margin-bottom: 12px;
+      align-items: center;
+      margin-bottom: 10px;
     }
 
     .section-title {
-      font-size: 13px;
+      font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.12em;
       color: var(--text-muted);
@@ -206,24 +225,22 @@
       font-size: 11px;
       padding: 3px 8px;
       border-radius: var(--radius-pill);
-      border: 1px solid rgba(116, 129, 158, 0.7);
+      border: 1px solid rgba(95, 112, 151, 0.9);
       color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
     }
 
     .card {
-      background: linear-gradient(145deg, rgba(15, 21, 33, 0.96), rgba(10, 13, 24, 0.96));
-      border-radius: var(--radius-lg);
+      background: radial-gradient(circle at top left, #151b2a 0, #0b0f1b 45%, #050710 100%);
+      border-radius: 14px;
+      border: 1px solid rgba(82, 103, 152, 0.7);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.6);
       padding: 12px 12px;
-      border: 1px solid rgba(115, 138, 173, 0.4);
-      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.55);
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .card-soft {
-      background: radial-gradient(circle at top left, #171d29 0, #101522 40%, #080b13 100%);
-      border-radius: var(--radius-lg);
+      background: rgba(9, 13, 24, 0.96);
+      border-radius: 12px;
       border: 1px solid var(--border-subtle);
       padding: 12px;
       margin-bottom: 12px;
@@ -233,140 +250,133 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .card-title {
       font-size: 13px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.09em;
       color: var(--text-muted);
     }
 
-    .pill-small {
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: var(--radius-pill);
-      border: 1px solid rgba(116, 129, 158, 0.75);
+    .muted {
+      font-size: 12px;
       color: var(--text-muted);
     }
 
     .show-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     .show-item {
-      padding: 8px 9px;
+      padding: 7px 9px;
       border-radius: 10px;
-      background: rgba(10, 13, 22, 0.9);
-      border: 1px solid rgba(54, 65, 90, 0.9);
+      background: rgba(5, 8, 16, 0.95);
+      border: 1px solid rgba(50, 65, 99, 0.9);
       display: flex;
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
-      transition: background 0.16s ease, border-color 0.16s ease, transform 0.08s ease;
+      transition: background 0.16s ease, border-color 0.16s ease, transform 0.06s ease;
+      font-size: 13px;
     }
 
     .show-item:hover {
-      background: rgba(25, 32, 49, 0.95);
-      border-color: rgba(94, 134, 206, 0.9);
+      background: rgba(20, 29, 52, 0.96);
+      border-color: rgba(101, 136, 211, 0.95);
       transform: translateY(-1px);
     }
 
-    .show-item-main {
+    .show-left {
       display: flex;
       flex-direction: column;
       gap: 2px;
     }
 
-    .show-item-name {
-      font-size: 14px;
+    .show-name {
       font-weight: 500;
     }
 
-    .show-item-meta {
+    .show-meta {
       font-size: 11px;
       color: var(--text-muted);
       display: flex;
-      gap: 8px;
-      align-items: center;
+      gap: 6px;
+    }
+
+    .status-pill {
+      font-size: 11px;
+      padding: 3px 7px;
+      border-radius: var(--radius-pill);
+      background: rgba(12, 28, 53, 0.98);
+      border: 1px solid rgba(88, 146, 225, 0.95);
+      color: #a9cdff;
     }
 
     .status-dot {
-      width: 6px;
-      height: 6px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: #5dd89a;
-      box-shadow: 0 0 10px rgba(93, 216, 154, 0.85);
+      background: #5ade9c;
+      box-shadow: 0 0 10px rgba(81, 221, 151, 0.9);
     }
 
-    .muted {
-      color: var(--text-muted);
+    .current-show-summary {
       font-size: 12px;
-    }
-
-    .form-row {
       display: flex;
       flex-direction: column;
       gap: 4px;
-      margin-bottom: 8px;
     }
 
-    label {
-      font-size: 12px;
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .summary-label {
       color: var(--text-muted);
     }
 
-    input[type="text"],
-    input[type="date"],
-    textarea,
-    select {
-      background: #070b12;
-      border-radius: 9px;
-      border: 1px solid #252b3b;
-      padding: 7px 9px;
-      font-size: 14px;
+    .summary-value {
       color: var(--text-main);
-      outline: none;
     }
 
-    input[type="text"]:focus,
-    input[type="date"]:focus,
-    textarea:focus,
-    select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(78, 163, 255, 0.5);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 50px;
-      max-height: 110px;
+    .timer-block {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 10px;
     }
 
     .timer-display {
-      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 34px;
-      letter-spacing: 0.12em;
-      padding: 9px 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 32px;
+      letter-spacing: 0.14em;
+      padding: 8px 11px;
       border-radius: 14px;
       background: radial-gradient(circle at top, #151e2e, #070912);
       border: 1px solid rgba(120, 153, 225, 0.7);
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      margin-bottom: 10px;
+      align-items: center;
       box-shadow: 0 18px 40px rgba(3, 9, 30, 0.8);
+    }
+
+    .timer-label-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
     .timer-label {
       font-size: 11px;
-      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.12em;
+      color: var(--text-muted);
     }
 
     .timer-state {
@@ -379,19 +389,17 @@
 
     .timer-controls {
       display: flex;
-      align-items: center;
-      gap: 7px;
-      margin-bottom: 10px;
+      gap: 8px;
     }
 
     .btn-timer-main {
       flex: 1;
-      padding: 8px 10px;
+      border-radius: var(--radius-pill);
+      padding: 8px 12px;
       font-weight: 500;
-      border-radius: 999px;
-      border: 1px solid rgba(14, 182, 120, 0.9);
-      background: radial-gradient(circle at top left, #2bd199, #079b60);
-      color: #020307;
+      border: 1px solid rgba(11, 178, 119, 0.9);
+      background: radial-gradient(circle at top left, #2ad196, #079b60);
+      color: #020306;
       box-shadow: 0 14px 30px rgba(4, 135, 86, 0.7);
     }
 
@@ -401,87 +409,100 @@
       box-shadow: 0 14px 30px rgba(19, 95, 221, 0.7);
     }
 
-    .btn-small {
-      padding: 7px 10px;
+    .form-row {
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    label {
       font-size: 12px;
-      border-radius: 999px;
-      background: rgba(9, 14, 26, 0.9);
-      border: 1px solid rgba(80, 92, 122, 0.85);
       color: var(--text-muted);
     }
 
-    .btn-small:hover {
-      border-color: rgba(124, 143, 184, 0.95);
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    textarea {
+      background: #060812;
+      border-radius: 9px;
+      border: 1px solid #252b3b;
+      padding: 7px 10px;
+      font-size: 14px;
       color: var(--text-main);
-      background: rgba(24, 31, 51, 0.95);
+      outline: none;
     }
 
-    .btn-danger {
-      background: linear-gradient(135deg, #ff5c80, #ff2358);
-      color: #020308;
-      border-color: rgba(255, 124, 151, 0.9);
-      box-shadow: 0 10px 24px rgba(255, 54, 98, 0.55);
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="date"]:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(78, 163, 255, 0.4);
     }
 
-    .btn-danger:hover {
-      background: linear-gradient(135deg, #ff7492, #ff3466);
+    textarea {
+      resize: vertical;
+      min-height: 40px;
+      max-height: 90px;
     }
 
-    .pill-scene {
-      font-size: 11px;
-      padding: 3px 9px;
-      border-radius: var(--radius-pill);
-      background: rgba(24, 34, 59, 0.9);
-      border: 1px solid rgba(92, 128, 199, 0.8);
-      color: #b5c8ff;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
     }
 
-    .pill-scene span.dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #8ad1ff;
-      box-shadow: 0 0 10px rgba(138, 209, 255, 0.9);
-    }
-
-    .scene-list {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      max-height: 180px;
-      overflow-y: auto;
-      margin-top: 6px;
-    }
-
-    .scene-item {
-      padding: 6px 8px;
-      border-radius: 8px;
-      background: rgba(7, 10, 18, 0.9);
-      border: 1px solid rgba(47, 58, 84, 0.9);
+    .notes-category-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 12px;
+      margin-bottom: 4px;
     }
 
-    .scene-item-main {
+    .notes-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+    }
+
+    .note-log {
+      margin-top: 5px;
+      max-height: 120px;
+      overflow-y: auto;
+      padding: 6px;
+      border-radius: 9px;
+      background: rgba(5, 8, 16, 0.96);
+      border: 1px solid rgba(37, 46, 72, 0.95);
+      font-size: 11px;
       display: flex;
       flex-direction: column;
+      gap: 4px;
     }
 
-    .scene-name {
-      font-weight: 500;
+    .note-item {
+      padding: 4px 5px;
+      border-radius: 7px;
+      background: rgba(12, 18, 30, 0.96);
+      border: 1px solid rgba(52, 63, 93, 0.95);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
-    .scene-meta {
+    .note-time {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       font-size: 11px;
       color: var(--text-muted);
     }
 
-    .tag {
+    .note-text {
+      font-size: 11px;
+    }
+
+    .inline-pill {
       font-size: 11px;
       padding: 2px 7px;
       border-radius: var(--radius-pill);
@@ -489,168 +510,31 @@
       color: var(--text-muted);
     }
 
-    .notes-container {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .note-input-row {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .note-input {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .note-input input[type="text"] {
-      flex: 1;
-    }
-
-    .note-log {
-      max-height: 220px;
-      overflow-y: auto;
-      border-radius: 10px;
-      background: rgba(6, 9, 16, 0.95);
-      border: 1px solid rgba(38, 46, 69, 0.95);
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    .report-preview {
       font-size: 12px;
+      line-height: 1.4;
     }
 
-    .note-item {
-      padding: 5px 6px;
-      border-radius: 7px;
-      background: rgba(13, 19, 31, 0.95);
-      border: 1px solid rgba(53, 64, 93, 0.95);
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .note-text-block {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .note-timestamp {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .note-text {
-      font-size: 12px;
-    }
-
-    .note-tag {
-      align-self: flex-start;
-      font-size: 10px;
-      padding: 1px 6px;
-      border-radius: 999px;
-      border: 1px solid rgba(92, 115, 168, 0.95);
-      color: var(--text-muted);
-    }
-
-    .showstop-log {
-      max-height: 160px;
-      overflow-y: auto;
-      border-radius: 10px;
-      background: rgba(20, 9, 14, 0.97);
-      border: 1px solid rgba(116, 48, 71, 0.95);
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      font-size: 12px;
-    }
-
-    .showstop-item {
-      padding: 5px 6px;
-      border-radius: 7px;
-      background: rgba(38, 11, 23, 0.98);
-      border: 1px solid rgba(150, 71, 99, 0.98);
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .showstop-reason {
-      font-size: 12px;
-    }
-
-    .showstop-meta {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .report-section {
-      margin-bottom: 10px;
-      border-bottom: 1px solid rgba(46, 55, 78, 0.9);
-      padding-bottom: 8px;
-    }
-
-    .report-section:last-child {
-      border-bottom: none;
-      padding-bottom: 0;
-      margin-bottom: 0;
-    }
-
-    .report-section h3 {
+    .report-preview h3 {
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.12em;
       color: var(--text-muted);
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
-    .report-list {
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
+    .report-preview-section {
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed rgba(57, 69, 108, 0.7);
     }
 
-    .report-item-label {
-      color: var(--text-muted);
-    }
-
-    .report-item-value {
-      color: var(--text-main);
-    }
-
-    .tag-showstop {
-      font-size: 10px;
-      padding: 1px 6px;
-      border-radius: 999px;
-      border: 1px solid rgba(222, 102, 132, 0.95);
-      color: #ffcede;
-    }
-
-    .link-button {
-      background: none;
-      border: none;
-      padding: 0;
-      margin: 0;
-      color: var(--accent);
-      font-size: 12px;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
-    .link-button:hover {
-      color: #81c2ff;
+    .report-preview-section:last-child {
+      border-bottom: none;
     }
 
     @media (max-width: 900px) {
-      .main-layout {
+      .layout {
         grid-template-columns: 1fr;
       }
       .pane-left {
@@ -673,180 +557,162 @@
   </style>
 </head>
 <body>
-  <div class="app-container">
+  <div class="app">
     <header>
-      <div class="title-block">
-        <h1>
-          <span class="logo-dot"></span>
-          Show Caller Console
-        </h1>
-        <div class="subtitle">Backstage timing, scenes, and notes — all in one place.</div>
+      <div class="header-title">
+        <h1><span class="logo-dot"></span> Show Caller PDF Console</h1>
+        <div class="header-subtitle">
+          Granny Got Stuck In The Time Machine – timing, notes, and auto‑generated PDF reports.
+        </div>
       </div>
       <div class="header-actions">
         <div class="pill-indicator">Backstage dark mode</div>
-        <button id="newShowBtn" class="btn-primary">
-          <span>＋</span> Create New Show
-        </button>
+        <button id="newRunBtn" class="btn-primary">＋ New performance</button>
       </div>
     </header>
 
-    <div class="main-layout">
-      <!-- LEFT PANE: Shows + Timer/Controls -->
+    <div class="layout">
+      <!-- LEFT: Reports & saved shows -->
       <div class="pane pane-left">
         <div class="section-header">
-          <div class="section-title">Shows</div>
-          <span class="badge" id="showCountBadge">0 saved</span>
+          <div class="section-title">Saved performance reports</div>
+          <span id="showCountBadge" class="badge">0 saved</span>
         </div>
 
-        <div class="card-soft" id="newShowCard" style="display: none;">
+        <div class="card-soft">
           <div class="card-header">
-            <div class="card-title">Create new show</div>
+            <div class="card-title">Performances</div>
+            <span class="badge">Local storage</span>
           </div>
-          <div>
-            <div class="form-row">
-              <label for="showNameInput">Show name</label>
-              <input type="text" id="showNameInput" placeholder="e.g. Wicked – Evening Performance" />
+          <div id="showList" class="show-list"></div>
+          <div id="noShows" class="muted" style="margin-top:6px;">
+            No performances yet. Click <strong>New performance</strong> to start timing a show.
+          </div>
+        </div>
+
+        <div id="reportCard" class="card-soft" style="display:none;">
+          <div class="card-header">
+            <div class="card-title">Selected performance</div>
+            <button id="downloadPdfBtn" class="btn-small">Generate PDF report</button>
+          </div>
+          <div id="reportPreview" class="report-preview"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Live show controls -->
+      <div class="pane pane-right">
+        <div class="section-header">
+          <div class="section-title">Live show controls</div>
+          <span class="badge" id="liveStatusBadge">Idle</span>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Performance details</div>
+            <span class="inline-pill">Show: Granny Got Stuck In The Time Machine</span>
+          </div>
+          <div class="form-row">
+            <label for="perfNumberInput">Performance number</label>
+            <input type="number" id="perfNumberInput" min="1" placeholder="e.g. 1" />
+          </div>
+          <div class="form-row">
+            <label for="showNumberInput">Show number / internal ID (optional)</label>
+            <input type="text" id="showNumberInput" placeholder="e.g. Evening 1, Matinee 2" />
+          </div>
+          <div class="form-row">
+            <label for="dateInput">Date</label>
+            <input type="date" id="dateInput" />
+          </div>
+          <div class="current-show-summary" style="margin-top:4px;">
+            <div class="summary-row">
+              <span class="summary-label">Current scene:</span>
+              <span class="summary-value">Scene 1</span>
             </div>
-            <div class="form-row">
-              <label for="showDateInput">Show date</label>
-              <input type="date" id="showDateInput" />
+            <div class="summary-row">
+              <span class="summary-label">Notes (total):</span>
+              <span class="summary-value" id="liveNotesTotal">0</span>
             </div>
-            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
-              <button id="cancelNewShowBtn" class="btn-ghost">Cancel</button>
-              <button id="saveNewShowBtn" class="btn-primary">Save &amp; Open</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Show timer</div>
+          </div>
+          <div class="timer-block">
+            <div class="timer-display">
+              <div class="timer-label-block">
+                <div class="timer-label">Runtime</div>
+                <div id="timerValue">00:00:00</div>
+              </div>
+              <div class="timer-state" id="timerState">Idle</div>
+            </div>
+            <div class="timer-controls">
+              <button id="toggleTimerBtn" class="btn-timer-main paused">Start show</button>
+              <button id="pauseTimerBtn" class="btn-small">Pause</button>
+              <button id="stopShowBtn" class="btn-small btn-danger">Stop show</button>
+            </div>
+            <div class="muted">
+              Scene 1 starts automatically when you press <strong>Start show</strong>. Use <strong>Stop show</strong> to end
+              and generate the report.
             </div>
           </div>
         </div>
 
         <div class="card-soft">
           <div class="card-header">
-            <div class="card-title">Saved shows</div>
-            <span class="pill-small">Local only</span>
+            <div class="card-title">Notes</div>
+            <span class="inline-pill" id="notesSummaryBadge">0 total notes</span>
           </div>
-          <div id="showList" class="show-list"></div>
-          <div id="noShowsMessage" class="muted" style="margin-top: 4px;">
-            No shows yet. Click <strong>Create New Show</strong> to get started.
-          </div>
-        </div>
-
-        <div id="leftShowControls" style="display: none;">
-          <div class="section-header" style="margin-top: 8px;">
-            <div class="section-title" id="currentShowTitle"></div>
-            <span class="badge" id="currentShowDate"></span>
-          </div>
-
-          <div class="card">
-            <div class="timer-display">
-              <div>
-                <div class="timer-label">Show timer</div>
-                <div id="timerValue">00:00:00</div>
+          <div class="notes-grid">
+            <!-- General -->
+            <div>
+              <div class="notes-category-header">
+                <div class="notes-title">General</div>
+                <span class="badge" id="countGeneral">0</span>
               </div>
-              <div>
-                <div class="timer-state" id="timerStateBadge">Idle</div>
+              <textarea id="inputGeneral" placeholder="Type a general note and press Enter (while focused)"></textarea>
+              <div class="note-log" id="logGeneral">
+                <div class="muted">No general notes yet.</div>
               </div>
             </div>
-
-            <div class="timer-controls">
-              <button id="toggleTimerBtn" class="btn-timer-main paused">Start</button>
-              <button id="resetTimerBtn" class="btn-small">Reset</button>
-              <button id="showStopBtn" class="btn-small btn-danger">Show stop</button>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <button id="newSceneBtn" class="btn-small">
-                ＋ New scene
-              </button>
-              <span class="pill-scene">
-                <span class="dot"></span>
-                <span id="sceneStatusLabel">No scenes yet</span>
-              </span>
-            </div>
-
-            <div class="scene-list" id="sceneList"></div>
-          </div>
-
-          <div class="card-soft">
-            <div class="card-header">
-              <div class="card-title">Show stops</div>
-              <span class="pill-small" id="showStopCountBadge">0</span>
-            </div>
-            <div id="showStopLog" class="showstop-log" style="display: none;"></div>
-            <div id="noShowStopsMessage" class="muted">No show stops recorded.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT PANE: Notes + Report -->
-      <div class="pane pane-right">
-        <div class="section-header">
-          <div class="section-title">Live notes &amp; report</div>
-          <button id="toggleReportBtn" class="btn-ghost" style="display: none;">View report</button>
-        </div>
-
-        <div id="liveView">
-          <div class="card-soft">
-            <div class="card-header">
-              <div class="card-title">Live notes</div>
-              <span class="pill-small">Press Enter to save</span>
-            </div>
-
-            <div class="notes-container">
-              <div class="note-input-row">
-                <div class="note-input">
-                  <input
-                    type="text"
-                    id="noteInput"
-                    placeholder="Type a note and press Enter (e.g. 'LX 23 late by 1.2s')"
-                  />
-                  <button id="addNoteBtn" class="btn-small">Add</button>
-                </div>
-                <div class="muted">
-                  Notes are automatically timestamped at the current show time.
-                </div>
+            <!-- Technical -->
+            <div>
+              <div class="notes-category-header">
+                <div class="notes-title">Technical</div>
+                <span class="badge" id="countTechnical">0</span>
               </div>
-
-              <div>
-                <div class="card-header" style="margin-bottom: 4px;">
-                  <div class="card-title">Note log</div>
-                  <span class="pill-small" id="noteCountBadge">0</span>
-                </div>
-                <div id="noteLog" class="note-log">
-                  <div class="muted">No notes yet. Start typing above.</div>
-                </div>
+              <textarea id="inputTechnical" placeholder="LX, SD, AV, automation issues..."></textarea>
+              <div class="note-log" id="logTechnical">
+                <div class="muted">No technical notes yet.</div>
+              </div>
+            </div>
+            <!-- Cast -->
+            <div>
+              <div class="notes-category-header">
+                <div class="notes-title">Cast</div>
+                <span class="badge" id="countCast">0</span>
+              </div>
+              <textarea id="inputCast" placeholder="Cast performance, line issues, covers..."></textarea>
+              <div class="note-log" id="logCast">
+                <div class="muted">No cast notes yet.</div>
+              </div>
+            </div>
+            <!-- Accident -->
+            <div>
+              <div class="notes-category-header">
+                <div class="notes-title">Accident report</div>
+                <span class="badge" id="countAccident">0</span>
+              </div>
+              <textarea id="inputAccident" placeholder="Incidents, injuries, H&S concerns..."></textarea>
+              <div class="note-log" id="logAccident">
+                <div class="muted">No accident notes yet.</div>
               </div>
             </div>
           </div>
-
-          <div class="card-soft">
-            <div class="card-header">
-              <div class="card-title">Quick summary</div>
-            </div>
-            <div class="report-list">
-              <div>
-                <span class="report-item-label">Current scene:</span>
-                <span class="report-item-value" id="quickCurrentScene">None</span>
-              </div>
-              <div>
-                <span class="report-item-label">Show stops:</span>
-                <span class="report-item-value" id="quickShowStops">0</span>
-              </div>
-              <div>
-                <span class="report-item-label">Notes:</span>
-                <span class="report-item-value" id="quickNotesCount">0</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div id="reportView" style="display: none;">
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">Show report</div>
-              <button id="backToLiveBtn" class="btn-ghost">Back to live view</button>
-            </div>
-            <div id="reportContent">
-              <!-- Filled by JS -->
-            </div>
+          <div class="muted" style="margin-top:6px;">
+            While focused in a notes box, press <strong>Enter</strong> to save a note. Each note is timestamped with the
+            current show time.
           </div>
         </div>
       </div>
@@ -854,653 +720,611 @@
   </div>
 
   <script>
-    // --- Storage helpers ---
-    const STORAGE_KEY = "showCaller_shows";
+    // ---------- Storage ----------
+    const STORAGE_KEY = "showCaller_pdf_performances";
 
-    function loadShows() {
+    function loadPerformances() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return [];
         const parsed = JSON.parse(raw);
         return Array.isArray(parsed) ? parsed : [];
-      } catch (e) {
-        console.error("Failed to load shows:", e);
+      } catch {
         return [];
       }
     }
 
-    function saveShows(shows) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(shows));
+    function savePerformances(list) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
     }
 
-    // --- App state ---
-    const appState = {
-      shows: loadShows(),
-      currentShowId: null,
-      timer: {
-        running: false,
+    // ---------- State ----------
+    const state = {
+      performances: loadPerformances(),
+      currentLive: {
+        id: null,
+        isRunning: false,
         startTime: null,
-        elapsed: 0, // in ms
-        intervalId: null
-      }
+        elapsedMs: 0
+      },
+      timerInterval: null,
+      selectedReportId: null
     };
 
-    // --- Utility functions ---
-    function formatTimeMs(ms) {
-      const totalSeconds = Math.floor(ms / 1000);
-      const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
-      const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
-      const seconds = String(totalSeconds % 60).padStart(2, "0");
-      return `${hours}:${minutes}:${seconds}`;
-    }
+    const SHOW_TITLE = "Granny Got Stuck In The Time Machine";
 
-    function getCurrentShow() {
-      return appState.shows.find(s => s.id === appState.currentShowId) || null;
-    }
-
-    function updateShow(updatedShow) {
-      const idx = appState.shows.findIndex(s => s.id === updatedShow.id);
-      if (idx !== -1) {
-        appState.shows[idx] = updatedShow;
-        saveShows(appState.shows);
-      }
-    }
-
-    function generateId() {
-      return "show_" + Date.now() + "_" + Math.random().toString(16).slice(2);
-    }
-
-    // --- DOM elements ---
-    const newShowBtn = document.getElementById("newShowBtn");
-    const newShowCard = document.getElementById("newShowCard");
-    const cancelNewShowBtn = document.getElementById("cancelNewShowBtn");
-    const saveNewShowBtn = document.getElementById("saveNewShowBtn");
-    const showNameInput = document.getElementById("showNameInput");
-    const showDateInput = document.getElementById("showDateInput");
-    const showList = document.getElementById("showList");
+    // ---------- DOM ----------
+    const showListEl = document.getElementById("showList");
     const showCountBadge = document.getElementById("showCountBadge");
-    const noShowsMessage = document.getElementById("noShowsMessage");
-    const leftShowControls = document.getElementById("leftShowControls");
-    const currentShowTitle = document.getElementById("currentShowTitle");
-    const currentShowDate = document.getElementById("currentShowDate");
+    const noShowsEl = document.getElementById("noShows");
+    const reportCard = document.getElementById("reportCard");
+    const reportPreviewEl = document.getElementById("reportPreview");
+    const downloadPdfBtn = document.getElementById("downloadPdfBtn");
 
-    const timerValue = document.getElementById("timerValue");
-    const timerStateBadge = document.getElementById("timerStateBadge");
+    const newRunBtn = document.getElementById("newRunBtn");
+    const perfNumberInput = document.getElementById("perfNumberInput");
+    const showNumberInput = document.getElementById("showNumberInput");
+    const dateInput = document.getElementById("dateInput");
+    const liveStatusBadge = document.getElementById("liveStatusBadge");
+
+    const timerValueEl = document.getElementById("timerValue");
+    const timerStateEl = document.getElementById("timerState");
     const toggleTimerBtn = document.getElementById("toggleTimerBtn");
-    const resetTimerBtn = document.getElementById("resetTimerBtn");
-    const showStopBtn = document.getElementById("showStopBtn");
-    const newSceneBtn = document.getElementById("newSceneBtn");
-    const sceneStatusLabel = document.getElementById("sceneStatusLabel");
-    const sceneListEl = document.getElementById("sceneList");
+    const pauseTimerBtn = document.getElementById("pauseTimerBtn");
+    const stopShowBtn = document.getElementById("stopShowBtn");
 
-    const showStopLog = document.getElementById("showStopLog");
-    const noShowStopsMessage = document.getElementById("noShowStopsMessage");
-    const showStopCountBadge = document.getElementById("showStopCountBadge");
+    const liveNotesTotalEl = document.getElementById("liveNotesTotal");
+    const notesSummaryBadge = document.getElementById("notesSummaryBadge");
 
-    const noteInput = document.getElementById("noteInput");
-    const addNoteBtn = document.getElementById("addNoteBtn");
-    const noteLog = document.getElementById("noteLog");
-    const noteCountBadge = document.getElementById("noteCountBadge");
+    const inputGeneral = document.getElementById("inputGeneral");
+    const inputTechnical = document.getElementById("inputTechnical");
+    const inputCast = document.getElementById("inputCast");
+    const inputAccident = document.getElementById("inputAccident");
 
-    const quickCurrentScene = document.getElementById("quickCurrentScene");
-    const quickShowStops = document.getElementById("quickShowStops");
-    const quickNotesCount = document.getElementById("quickNotesCount");
+    const logGeneral = document.getElementById("logGeneral");
+    const logTechnical = document.getElementById("logTechnical");
+    const logCast = document.getElementById("logCast");
+    const logAccident = document.getElementById("logAccident");
 
-    const liveView = document.getElementById("liveView");
-    const reportView = document.getElementById("reportView");
-    const toggleReportBtn = document.getElementById("toggleReportBtn");
-    const backToLiveBtn = document.getElementById("backToLiveBtn");
-    const reportContent = document.getElementById("reportContent");
+    const countGeneral = document.getElementById("countGeneral");
+    const countTechnical = document.getElementById("countTechnical");
+    const countCast = document.getElementById("countCast");
+    const countAccident = document.getElementById("countAccident");
 
-    const noShowsTextDefault =
-      "No shows yet. Click <strong>Create New Show</strong> to get started.";
+    // ---------- Util ----------
+    function formatTime(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const h = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+      const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+      const s = String(totalSeconds % 60).padStart(2, "0");
+      return `${h}:${m}:${s}`;
+    }
 
-    // --- Rendering functions ---
-    function renderShowsList() {
-      showList.innerHTML = "";
-      const shows = appState.shows.slice().sort((a, b) => {
+    function totalNotesCount(notes) {
+      return (
+        (notes.general?.length || 0) +
+        (notes.technical?.length || 0) +
+        (notes.cast?.length || 0) +
+        (notes.accident?.length || 0)
+      );
+    }
+
+    function createEmptyNotes() {
+      return {
+        general: [],
+        technical: [],
+        cast: [],
+        accident: []
+      };
+    }
+
+    function getLivePerformance() {
+      if (!state.currentLive.id) return null;
+      return state.performances.find(p => p.id === state.currentLive.id) || null;
+    }
+
+    function updatePerformance(perf) {
+      const idx = state.performances.findIndex(p => p.id === perf.id);
+      if (idx === -1) return;
+      state.performances[idx] = perf;
+      savePerformances(state.performances);
+    }
+
+    // ---------- Rendering ----------
+    function renderPerformancesList() {
+      showListEl.innerHTML = "";
+      const list = state.performances.slice().sort((a, b) => {
         const da = a.date || "";
         const db = b.date || "";
         if (da === db) return (b.createdAt || 0) - (a.createdAt || 0);
         return db.localeCompare(da);
       });
 
-      if (shows.length === 0) {
-        noShowsMessage.innerHTML = noShowsTextDefault;
+      showCountBadge.textContent = `${list.length} saved`;
+
+      if (list.length === 0) {
+        noShowsEl.style.display = "block";
       } else {
-        noShowsMessage.innerHTML =
-          "Click a show to open it. All information is stored locally in this browser.";
+        noShowsEl.style.display = "block";
+        noShowsEl.innerHTML =
+          "Click a performance to view its summary and generate a PDF report.";
       }
 
-      showCountBadge.textContent = `${shows.length} saved`;
-
-      shows.forEach(show => {
+      list.forEach(perf => {
         const el = document.createElement("div");
         el.className = "show-item";
+        const runtimeLabel = perf.runtimeMs != null ? formatTime(perf.runtimeMs) : "--:--:--";
+        const notesCount = totalNotesCount(perf.notes || createEmptyNotes());
         el.innerHTML = `
-          <div class="show-item-main">
-            <div class="show-item-name">${show.name || "Untitled show"}</div>
-            <div class="show-item-meta">
-              <span>${show.date || "No date"}</span>
-              <span>Scenes: ${show.scenes?.length || 0}</span>
-              <span>Notes: ${show.notes?.length || 0}</span>
+          <div class="show-left">
+            <div class="show-name">
+              Perf #${perf.performanceNumber || "?"} – ${perf.date || "No date"}
+            </div>
+            <div class="show-meta">
+              <span>${SHOW_TITLE}</span>
+              <span>Runtime: ${runtimeLabel}</span>
+              <span>Notes: ${notesCount}</span>
             </div>
           </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
+          <div style="display:flex;align-items:center;gap:6px;">
             ${
-              appState.currentShowId === show.id
-                ? '<span class="status-dot"></span><span class="muted">Active</span>'
+              state.selectedReportId === perf.id
+                ? '<span class="status-dot"></span><span class="muted">Selected</span>'
                 : '<span class="muted">Open</span>'
             }
           </div>
         `;
         el.addEventListener("click", () => {
-          openShow(show.id);
+          state.selectedReportId = perf.id;
+          renderPerformancesList();
+          renderSelectedReport();
         });
-        showList.appendChild(el);
+        showListEl.appendChild(el);
       });
-    }
-
-    function renderCurrentShowHeader() {
-      const show = getCurrentShow();
-      if (!show) {
-        leftShowControls.style.display = "none";
-        toggleReportBtn.style.display = "none";
-        liveView.style.display = "block";
-        reportView.style.display = "none";
-        return;
-      }
-
-      leftShowControls.style.display = "block";
-      toggleReportBtn.style.display = "inline-flex";
-
-      currentShowTitle.textContent = show.name || "Untitled show";
-      currentShowDate.textContent = show.date || "No date";
-
-      const scenesCount = show.scenes?.length || 0;
-      const notesCount = show.notes?.length || 0;
-      const showStopsCount = show.showStops?.length || 0;
-
-      showStopCountBadge.textContent = showStopsCount.toString();
-      noteCountBadge.textContent = notesCount.toString();
-      quickNotesCount.textContent = notesCount.toString();
-      quickShowStops.textContent = showStopsCount.toString();
-
-      if (scenesCount === 0) {
-        sceneStatusLabel.textContent = "No scenes yet";
-        quickCurrentScene.textContent = "None";
-      } else {
-        const currentScene = show.scenes[scenesCount - 1];
-        sceneStatusLabel.textContent = `Scene ${currentScene.number}`;
-        quickCurrentScene.textContent = `Scene ${currentScene.number}`;
-      }
     }
 
     function renderTimer() {
-      const ms = appState.timer.elapsed;
-      timerValue.textContent = formatTimeMs(ms);
-      if (appState.timer.running) {
-        timerStateBadge.textContent = "Running";
-        toggleTimerBtn.textContent = "Pause";
+      timerValueEl.textContent = formatTime(state.currentLive.elapsedMs);
+      if (state.currentLive.isRunning) {
+        timerStateEl.textContent = "Running";
+        toggleTimerBtn.textContent = "Pause (main)";
         toggleTimerBtn.classList.remove("paused");
-      } else {
-        timerStateBadge.textContent = ms === 0 ? "Idle" : "Paused";
-        toggleTimerBtn.textContent = "Start";
+        liveStatusBadge.textContent = "Running";
+      } else if (state.currentLive.elapsedMs === 0) {
+        timerStateEl.textContent = "Idle";
+        toggleTimerBtn.textContent = "Start show";
         toggleTimerBtn.classList.add("paused");
-      }
-    }
-
-    function renderScenes() {
-      const show = getCurrentShow();
-      if (!show) return;
-
-      const scenes = show.scenes || [];
-      sceneListEl.innerHTML = "";
-
-      scenes.forEach(scene => {
-        const el = document.createElement("div");
-        el.className = "scene-item";
-        const startLabel = formatTimeMs(scene.startTimeMs || 0);
-        const endLabel =
-          scene.endTimeMs != null ? formatTimeMs(scene.endTimeMs) : "…";
-        const durationLabel =
-          scene.endTimeMs != null
-            ? formatTimeMs((scene.endTimeMs || 0) - (scene.startTimeMs || 0))
-            : "";
-        el.innerHTML = `
-          <div class="scene-item-main">
-            <div class="scene-name">Scene ${scene.number}</div>
-            <div class="scene-meta">
-              ${startLabel} → ${endLabel}
-              ${
-                durationLabel
-                  ? ` &middot; <span class="muted">Dur: ${durationLabel}</span>`
-                  : ""
-              }
-            </div>
-          </div>
-          <div>
-            <span class="tag">Notes: ${scene.noteIds?.length || 0}</span>
-          </div>
-        `;
-        sceneListEl.appendChild(el);
-      });
-
-      if (scenes.length === 0) {
-        const el = document.createElement("div");
-        el.className = "muted";
-        el.textContent = "No scenes yet. Use 'New Scene' during the show.";
-        sceneListEl.appendChild(el);
-      }
-    }
-
-    function renderShowStops() {
-      const show = getCurrentShow();
-      if (!show) return;
-
-      const stops = show.showStops || [];
-      showStopCountBadge.textContent = stops.length.toString();
-      quickShowStops.textContent = stops.length.toString();
-
-      if (stops.length === 0) {
-        showStopLog.style.display = "none";
-        noShowStopsMessage.style.display = "block";
-        return;
-      }
-
-      showStopLog.style.display = "flex";
-      noShowStopsMessage.style.display = "none";
-      showStopLog.innerHTML = "";
-
-      stops.forEach(stop => {
-        const el = document.createElement("div");
-        el.className = "showstop-item";
-        const startLabel = formatTimeMs(stop.startTimeMs || 0);
-        const endLabel =
-          stop.endTimeMs != null ? formatTimeMs(stop.endTimeMs) : "…";
-        const durationLabel =
-          stop.durationMs != null ? formatTimeMs(stop.durationMs) : "…";
-        el.innerHTML = `
-          <div class="showstop-reason">
-            <span class="tag-showstop">Show stop</span>
-            ${stop.reason ? " – " + stop.reason : ""}
-          </div>
-          <div class="showstop-meta">
-            ${startLabel} → ${endLabel}
-            &middot; Dur: ${durationLabel}
-          </div>
-        `;
-        showStopLog.appendChild(el);
-      });
-    }
-
-    function renderNotes() {
-      const show = getCurrentShow();
-      if (!show) return;
-
-      const notes = show.notes || [];
-      noteCountBadge.textContent = notes.length.toString();
-      quickNotesCount.textContent = notes.length.toString();
-
-      noteLog.innerHTML = "";
-      if (notes.length === 0) {
-        const el = document.createElement("div");
-        el.className = "muted";
-        el.textContent = "No notes yet. Start typing above.";
-        noteLog.appendChild(el);
-        return;
-      }
-
-      notes.forEach(note => {
-        const el = document.createElement("div");
-        el.className = "note-item";
-        const tsLabel = formatTimeMs(note.timeMs || 0);
-        el.innerHTML = `
-          <div class="note-text-block">
-            <div class="note-timestamp">${tsLabel}</div>
-            <div class="note-text">${note.text}</div>
-          </div>
-        `;
-        noteLog.appendChild(el);
-      });
-    }
-
-    function renderReport() {
-      const show = getCurrentShow();
-      if (!show) {
-        reportContent.innerHTML = "<div class='muted'>No show selected.</div>";
-        return;
-      }
-
-      const totalRuntimeMs = appState.timer.elapsed;
-      const scenes = show.scenes || [];
-      const notes = show.notes || [];
-      const stops = show.showStops || [];
-
-      let html = "";
-
-      html += `<div class="report-section">
-        <h3>Show summary</h3>
-        <div class="report-list">
-          <div><span class="report-item-label">Show:</span> <span class="report-item-value">${show.name || "Untitled show"}</span></div>
-          <div><span class="report-item-label">Date:</span> <span class="report-item-value">${show.date || "N/A"}</span></div>
-          <div><span class="report-item-label">Total runtime:</span> <span class="report-item-value">${formatTimeMs(totalRuntimeMs)}</span></div>
-          <div><span class="report-item-label">Scenes:</span> <span class="report-item-value">${scenes.length}</span></div>
-          <div><span class="report-item-label">Show stops:</span> <span class="report-item-value">${stops.length}</span></div>
-          <div><span class="report-item-label">Notes:</span> <span class="report-item-value">${notes.length}</span></div>
-        </div>
-      </div>`;
-
-      html += `<div class="report-section">
-        <h3>Scenes</h3>
-        <div class="report-list">
-          ${
-            scenes.length === 0
-              ? "<div class='muted'>No scenes recorded.</div>"
-              : scenes
-                  .map(scene => {
-                    const startLabel = formatTimeMs(scene.startTimeMs || 0);
-                    const endLabel =
-                      scene.endTimeMs != null ? formatTimeMs(scene.endTimeMs) : "…";
-                    const durationLabel =
-                      scene.endTimeMs != null
-                        ? formatTimeMs(
-                            (scene.endTimeMs || 0) - (scene.startTimeMs || 0)
-                          )
-                        : "…";
-                    return `<div>
-                      <span class="report-item-label">Scene ${scene.number}:</span>
-                      <span class="report-item-value">${startLabel} → ${endLabel} (Dur: ${durationLabel})</span>
-                      <span class="muted"> &middot; Notes: ${scene.noteIds?.length || 0}</span>
-                    </div>`;
-                  })
-                  .join("")
-          }
-        </div>
-      </div>`;
-
-      html += `<div class="report-section">
-        <h3>Show stops</h3>
-        <div class="report-list">
-          ${
-            stops.length === 0
-              ? "<div class='muted'>No show stops recorded.</div>"
-              : stops
-                  .map(stop => {
-                    const startLabel = formatTimeMs(stop.startTimeMs || 0);
-                    const endLabel =
-                      stop.endTimeMs != null ? formatTimeMs(stop.endTimeMs) : "…";
-                    const durationLabel =
-                      stop.durationMs != null
-                        ? formatTimeMs(stop.durationMs)
-                        : "…";
-                    return `<div>
-                      <span class="report-item-label">${startLabel} → ${endLabel}:</span>
-                      <span class="report-item-value">${stop.reason || "No reason provided"}</span>
-                      <span class="muted"> (Dur: ${durationLabel})</span>
-                    </div>`;
-                  })
-                  .join("")
-          }
-        </div>
-      </div>`;
-
-      html += `<div class="report-section">
-        <h3>Notes</h3>
-        <div class="report-list">
-          ${
-            notes.length === 0
-              ? "<div class='muted'>No notes recorded.</div>"
-              : notes
-                  .map(note => {
-                    const tsLabel = formatTimeMs(note.timeMs || 0);
-                    return `<div>
-                      <span class="report-item-label">${tsLabel}:</span>
-                      <span class="report-item-value">${note.text}</span>
-                    </div>`;
-                  })
-                  .join("")
-          }
-        </div>
-      </div>`;
-
-      reportContent.innerHTML = html;
-    }
-
-    // --- Core actions ---
-    function openNewShowForm() {
-      newShowCard.style.display = "block";
-      showNameInput.value = "";
-      showDateInput.value = "";
-      showNameInput.focus();
-    }
-
-    function closeNewShowForm() {
-      newShowCard.style.display = "none";
-    }
-
-    function createShow() {
-      const name = showNameInput.value.trim() || "Untitled show";
-      const date = showDateInput.value || "";
-
-      const newShow = {
-        id: generateId(),
-        name,
-        date,
-        createdAt: Date.now(),
-        scenes: [],
-        notes: [],
-        showStops: []
-      };
-
-      appState.shows.push(newShow);
-      saveShows(appState.shows);
-      appState.currentShowId = newShow.id;
-      appState.timer.elapsed = 0;
-      appState.timer.running = false;
-      clearInterval(appState.timer.intervalId);
-      appState.timer.intervalId = null;
-      renderAll();
-      closeNewShowForm();
-    }
-
-    function openShow(showId) {
-      appState.currentShowId = showId;
-      const show = getCurrentShow();
-      if (!show.timerElapsedMs) {
-        appState.timer.elapsed = 0;
+        liveStatusBadge.textContent = "Idle";
       } else {
-        appState.timer.elapsed = show.timerElapsedMs;
+        timerStateEl.textContent = "Paused";
+        toggleTimerBtn.textContent = "Resume show";
+        toggleTimerBtn.classList.add("paused");
+        liveStatusBadge.textContent = "Paused";
       }
-      appState.timer.running = false;
-      clearInterval(appState.timer.intervalId);
-      appState.timer.intervalId = null;
-      liveView.style.display = "block";
-      reportView.style.display = "none";
+    }
+
+    function renderNotesLogs(notes) {
+      const cats = [
+        { key: "general", logEl: logGeneral, countEl: countGeneral },
+        { key: "technical", logEl: logTechnical, countEl: countTechnical },
+        { key: "cast", logEl: logCast, countEl: countCast },
+        { key: "accident", logEl: logAccident, countEl: countAccident }
+      ];
+
+      cats.forEach(cat => {
+        const arr = notes[cat.key] || [];
+        cat.countEl.textContent = arr.length.toString();
+        cat.logEl.innerHTML = "";
+        if (arr.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "muted";
+          empty.textContent = `No ${cat.key} notes yet.`;
+          cat.logEl.appendChild(empty);
+        } else {
+          arr.forEach(n => {
+            const item = document.createElement("div");
+            item.className = "note-item";
+            item.innerHTML = `
+              <div class="note-time">${formatTime(n.timeMs || 0)}</div>
+              <div class="note-text">${n.text}</div>
+            `;
+            cat.logEl.appendChild(item);
+          });
+        }
+      });
+    }
+
+    function renderLiveNotesSummary() {
+      const perf = getLivePerformance();
+      if (!perf) {
+        liveNotesTotalEl.textContent = "0";
+        notesSummaryBadge.textContent = "0 total notes";
+        return;
+      }
+      const count = totalNotesCount(perf.notes || createEmptyNotes());
+      liveNotesTotalEl.textContent = count.toString();
+      notesSummaryBadge.textContent = `${count} total notes`;
+    }
+
+    function renderSelectedReport() {
+      const perf = state.performances.find(p => p.id === state.selectedReportId);
+      if (!perf) {
+        reportCard.style.display = "none";
+        reportPreviewEl.innerHTML = "";
+        return;
+      }
+
+      reportCard.style.display = "block";
+      const notes = perf.notes || createEmptyNotes();
+      const runtimeLabel = perf.runtimeMs != null ? formatTime(perf.runtimeMs) : "--:--:--";
+
+      function notesToText(arr) {
+        if (!arr || arr.length === 0) return "None.";
+        return arr
+          .map(n => `${formatTime(n.timeMs || 0)} – ${n.text}`)
+          .join("\n");
+      }
+
+      reportPreviewEl.innerHTML = `
+        <div class="report-preview-section">
+          <h3>Performance info</h3>
+          <div><strong>Date:</strong> ${perf.date || "N/A"}</div>
+          <div><strong>Show:</strong> ${SHOW_TITLE}</div>
+          <div><strong>Performance #:</strong> ${perf.performanceNumber || "N/A"}</div>
+          <div><strong>Show number / ID:</strong> ${perf.showNumber || "N/A"}</div>
+          <div><strong>Running time (Act I):</strong> ${runtimeLabel}</div>
+        </div>
+
+        <div class="report-preview-section">
+          <h3>General comments</h3>
+          <pre>${notesToText(notes.general)}</pre>
+        </div>
+
+        <div class="report-preview-section">
+          <h3>Technical</h3>
+          <pre>${notesToText(notes.technical)}</pre>
+        </div>
+
+        <div class="report-preview-section">
+          <h3>Cast</h3>
+          <pre>${notesToText(notes.cast)}</pre>
+        </div>
+
+        <div class="report-preview-section">
+          <h3>Accident report</h3>
+          <pre>${notesToText(notes.accident)}</pre>
+        </div>
+      `;
+    }
+
+    function renderAll() {
+      renderPerformancesList();
+      renderTimer();
+      const perf = getLivePerformance();
+      renderNotesLogs(perf ? perf.notes : createEmptyNotes());
+      renderLiveNotesSummary();
+      renderSelectedReport();
+    }
+
+    // ---------- Live performance flow ----------
+    function startNewPerformance() {
+      // If there is a running performance, stop its timer but don't auto-save.
+      if (state.currentLive.isRunning && state.currentLive.id) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+        state.currentLive.isRunning = false;
+      }
+
+      const today = new Date();
+      const iso = today.toISOString().slice(0, 10);
+      dateInput.value = iso;
+
+      const newPerf = {
+        id: "perf_" + Date.now() + "_" + Math.random().toString(16).slice(2),
+        createdAt: Date.now(),
+        date: iso,
+        performanceNumber: "",
+        showNumber: "",
+        showTitle: SHOW_TITLE,
+        runtimeMs: 0,
+        notes: createEmptyNotes()
+      };
+      state.performances.push(newPerf);
+      savePerformances(state.performances);
+
+      state.currentLive.id = newPerf.id;
+      state.currentLive.elapsedMs = 0;
+      state.currentLive.isRunning = false;
+      state.currentLive.startTime = null;
+      state.selectedReportId = newPerf.id;
+
+      perfNumberInput.value = "";
+      showNumberInput.value = "";
       renderAll();
+    }
+
+    function syncFormToLivePerf() {
+      const perf = getLivePerformance();
+      if (!perf) return;
+      perf.performanceNumber = perfNumberInput.value || "";
+      perf.showNumber = showNumberInput.value || "";
+      perf.date = dateInput.value || perf.date;
+      updatePerformance(perf);
+      renderPerformancesList();
+      renderSelectedReport();
     }
 
     function startTimer() {
-      if (appState.timer.running) return;
-      appState.timer.running = true;
-      appState.timer.startTime = Date.now() - appState.timer.elapsed;
-      appState.timer.intervalId = setInterval(() => {
-        appState.timer.elapsed = Date.now() - appState.timer.startTime;
-        const show = getCurrentShow();
-        if (show) {
-          show.timerElapsedMs = appState.timer.elapsed;
-          updateShow(show);
-        }
+      if (state.currentLive.isRunning) return;
+      const perf = getLivePerformance();
+      if (!perf) return;
+
+      syncFormToLivePerf();
+
+      state.currentLive.isRunning = true;
+      state.currentLive.startTime = Date.now() - state.currentLive.elapsedMs;
+
+      if (state.timerInterval) clearInterval(state.timerInterval);
+      state.timerInterval = setInterval(() => {
+        state.currentLive.elapsedMs = Date.now() - state.currentLive.startTime;
+        perf.runtimeMs = state.currentLive.elapsedMs;
+        updatePerformance(perf);
         renderTimer();
       }, 250);
       renderTimer();
     }
 
     function pauseTimer() {
-      if (!appState.timer.running) return;
-      appState.timer.running = false;
-      clearInterval(appState.timer.intervalId);
-      appState.timer.intervalId = null;
-      appState.timer.elapsed = Date.now() - appState.timer.startTime;
-      const show = getCurrentShow();
-      if (show) {
-        show.timerElapsedMs = appState.timer.elapsed;
-        updateShow(show);
-      }
+      if (!state.currentLive.isRunning) return;
+      const perf = getLivePerformance();
+      if (!perf) return;
+      state.currentLive.isRunning = false;
+      clearInterval(state.timerInterval);
+      state.timerInterval = null;
+      state.currentLive.elapsedMs = Date.now() - state.currentLive.startTime;
+      perf.runtimeMs = state.currentLive.elapsedMs;
+      updatePerformance(perf);
       renderTimer();
     }
 
-    function resetTimer() {
-      if (appState.timer.running) {
+    function stopShowAndSave() {
+      const perf = getLivePerformance();
+      if (!perf) return;
+
+      if (state.currentLive.isRunning) {
         pauseTimer();
       }
-      appState.timer.elapsed = 0;
-      const show = getCurrentShow();
-      if (show) {
-        show.timerElapsedMs = 0;
-        updateShow(show);
-      }
-      renderTimer();
+
+      // Final sync of form fields
+      syncFormToLivePerf();
+
+      // Ensure runtime saved
+      perf.runtimeMs = state.currentLive.elapsedMs;
+      updatePerformance(perf);
+
+      // Reset live state
+      state.currentLive.id = null;
+      state.currentLive.elapsedMs = 0;
+      state.currentLive.isRunning = false;
+      state.currentLive.startTime = null;
+
+      perfNumberInput.value = "";
+      showNumberInput.value = "";
+      // Date remains but no link to a running show now.
+
+      // Focus left column & generate PDF
+      state.selectedReportId = perf.id;
+      renderAll();
+      generatePdfForPerformance(perf).catch(err => {
+        console.error("PDF generation failed:", err);
+        alert(
+          "The PDF could not be generated. Check that 'Christmas Show Report Template.pdf' is in the same folder as index.html."
+        );
+      });
     }
 
-    function addScene() {
-      const show = getCurrentShow();
-      if (!show) return;
+    // ---------- Notes adding ----------
+    function addNote(category, text) {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      const perf = getLivePerformance();
+      if (!perf) return;
 
-      const scenes = show.scenes || [];
-      const number = scenes.length + 1;
-
-      const nowMs = appState.timer.elapsed;
-      const lastScene = scenes[scenes.length - 1];
-      if (lastScene && lastScene.endTimeMs == null) {
-        lastScene.endTimeMs = nowMs;
-      }
-
-      const newScene = {
-        number,
-        startTimeMs: nowMs,
-        endTimeMs: null,
-        noteIds: []
-      };
-
-      scenes.push(newScene);
-      show.scenes = scenes;
-      updateShow(show);
-      renderScenes();
-      renderCurrentShowHeader();
-      renderReport();
-    }
-
-    function addShowStop() {
-      const show = getCurrentShow();
-      if (!show) return;
-
-      const wasRunning = appState.timer.running;
-      if (wasRunning) pauseTimer();
-
-      const reason = window.prompt("Reason for show stop (optional):", "");
-      const startMs = appState.timer.elapsed;
-
-      // Simulate immediate stop/resume in one click.
-      // For now, we log a 0-duration stop unless user waits then clicks OK.
-      const resumeMs = appState.timer.elapsed;
-      const durationMs = resumeMs - startMs;
-
-      const newStop = {
-        startTimeMs: startMs,
-        endTimeMs: resumeMs,
-        durationMs,
-        reason: reason || ""
-      };
-
-      show.showStops = show.showStops || [];
-      show.showStops.push(newStop);
-      updateShow(show);
-      renderShowStops();
-      renderReport();
-
-      if (wasRunning) startTimer();
-    }
-
-    function addNote() {
-      const text = noteInput.value.trim();
-      if (!text) return;
-      const show = getCurrentShow();
-      if (!show) return;
-
-      const nowMs = appState.timer.elapsed;
-
-      const newNote = {
-        id: "note_" + Date.now() + "_" + Math.random().toString(16).slice(2),
+      const perfNotes = perf.notes || createEmptyNotes();
+      const nowMs = state.currentLive.elapsedMs || 0;
+      const note = {
         timeMs: nowMs,
-        text
+        text: trimmed
       };
+      perfNotes[category].push(note);
+      perf.notes = perfNotes;
+      updatePerformance(perf);
 
-      show.notes = show.notes || [];
-      show.notes.push(newNote);
-
-      // link note to current scene if any
-      const scenes = show.scenes || [];
-      if (scenes.length > 0) {
-        const currentScene = scenes[scenes.length - 1];
-        currentScene.noteIds = currentScene.noteIds || [];
-        currentScene.noteIds.push(newNote.id);
-      }
-
-      updateShow(show);
-      noteInput.value = "";
-      renderNotes();
-      renderScenes();
-      renderCurrentShowHeader();
-      renderReport();
+      renderNotesLogs(perfNotes);
+      renderLiveNotesSummary();
     }
 
-    // --- Event listeners ---
-    newShowBtn.addEventListener("click", openNewShowForm);
-    cancelNewShowBtn.addEventListener("click", closeNewShowForm);
-    saveNewShowBtn.addEventListener("click", createShow);
+    function setupNotesInput(textarea, category) {
+      textarea.addEventListener("keydown", e => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          addNote(category, textarea.value);
+          textarea.value = "";
+        }
+      });
+    }
+
+    // ---------- PDF generation ----------
+    async function generatePdfForPerformance(perf) {
+      const { PDFDocument, StandardFonts, rgb } = PDFLib;
+
+      // Fetch template from repo root
+      const existingPdfBytes = await fetch("Christmas Show Report Template.pdf").then(r =>
+        r.arrayBuffer()
+      );
+
+      const pdfDoc = await PDFDocument.load(existingPdfBytes);
+      const pages = pdfDoc.getPages();
+      const page = pages[0];
+
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const fontSize = 10;
+      const black = rgb(0, 0, 0);
+
+      const runtimeLabel = perf.runtimeMs != null ? formatTime(perf.runtimeMs) : "--:--:--";
+      const notes = perf.notes || createEmptyNotes();
+
+      function notesMultiLine(arr) {
+        if (!arr || arr.length === 0) return "None.";
+        return arr
+          .map(n => `${formatTime(n.timeMs || 0)} – ${n.text}`)
+          .join("\n");
+      }
+
+      // NOTE: The coordinates below are approximate and assume
+      // the template is A4-ish and the boxes are in rough positions.
+      // You can tweak x / y values if needed.
+
+      // Top table: DATE | SHOW | PERF #
+      page.drawText(perf.date || "", {
+        x: 60,
+        y: 735,
+        size: fontSize,
+        font,
+        color: black
+      });
+
+      page.drawText(SHOW_TITLE, {
+        x: 200,
+        y: 735,
+        size: fontSize,
+        font,
+        color: black
+      });
+
+      page.drawText(String(perf.performanceNumber || ""), {
+        x: 410,
+        y: 735,
+        size: fontSize,
+        font,
+        color: black
+      });
+
+      // Running time (Act I)
+      page.drawText(runtimeLabel, {
+        x: 120,
+        y: 705,
+        size: fontSize,
+        font,
+        color: black
+      });
+
+      // Now notes sections. We’ll stack them roughly down the page.
+      function drawWrappedText(text, x, y, width, lineHeight, useBold) {
+        const lines = [];
+        const words = text.split(/\s+/);
+        let currentLine = "";
+        words.forEach(word => {
+          const testLine = currentLine ? currentLine + " " + word : word;
+          const textWidth = (useBold ? fontBold : font).widthOfTextAtSize(testLine, fontSize);
+          if (textWidth > width && currentLine) {
+            lines.push(currentLine);
+            currentLine = word;
+          } else {
+            currentLine = testLine;
+          }
+        });
+        if (currentLine) lines.push(currentLine);
+
+        let currentY = y;
+        lines.forEach(line => {
+          page.drawText(line, {
+            x,
+            y: currentY,
+            size: fontSize,
+            font: useBold ? fontBold : font,
+            color: black
+          });
+          currentY -= lineHeight;
+        });
+        return currentY;
+      }
+
+      let cursorY = 660;
+
+      // GENERAL COMMENTS
+      cursorY = drawWrappedText("GENERAL COMMENTS:", 60, cursorY, 480, 14, true) - 4;
+      cursorY = drawWrappedText(notesMultiLine(notes.general), 60, cursorY, 480, 12, false) - 10;
+
+      // TECHNICAL
+      cursorY = drawWrappedText("TECHNICAL:", 60, cursorY, 480, 14, true) - 4;
+      cursorY = drawWrappedText(notesMultiLine(notes.technical), 60, cursorY, 480, 12, false) - 10;
+
+      // CAST
+      cursorY = drawWrappedText("CAST:", 60, cursorY, 480, 14, true) - 4;
+      cursorY = drawWrappedText(notesMultiLine(notes.cast), 60, cursorY, 480, 12, false) - 10;
+
+      // ACCIDENT REPORT
+      cursorY = drawWrappedText("ACCIDENT REPORT:", 60, cursorY, 480, 14, true) - 4;
+      drawWrappedText(notesMultiLine(notes.accident), 60, cursorY, 480, 12, false);
+
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      const safeDate = perf.date || "Performance";
+      link.href = url;
+      link.download = `Show Report - ${safeDate}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    // ---------- Event listeners ----------
+    newRunBtn.addEventListener("click", startNewPerformance);
+
+    perfNumberInput.addEventListener("change", syncFormToLivePerf);
+    showNumberInput.addEventListener("change", syncFormToLivePerf);
+    dateInput.addEventListener("change", syncFormToLivePerf);
 
     toggleTimerBtn.addEventListener("click", () => {
-      if (appState.timer.running) {
-        pauseTimer();
-      } else {
-        startTimer();
+      if (state.currentLive.isRunning) pauseTimer();
+      else startTimer();
+    });
+
+    pauseTimerBtn.addEventListener("click", () => {
+      pauseTimer();
+    });
+
+    stopShowBtn.addEventListener("click", () => {
+      if (!state.currentLive.id) {
+        alert("No live performance is currently running.");
+        return;
       }
+      if (!confirm("Stop show and generate a performance report?")) return;
+      stopShowAndSave();
     });
 
-    resetTimerBtn.addEventListener("click", resetTimer);
-    newSceneBtn.addEventListener("click", addScene);
-    showStopBtn.addEventListener("click", addShowStop);
+    setupNotesInput(inputGeneral, "general");
+    setupNotesInput(inputTechnical, "technical");
+    setupNotesInput(inputCast, "cast");
+    setupNotesInput(inputAccident, "accident");
 
-    addNoteBtn.addEventListener("click", addNote);
-    noteInput.addEventListener("keydown", e => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        addNote();
-      }
+    downloadPdfBtn.addEventListener("click", () => {
+      const perf = state.performances.find(p => p.id === state.selectedReportId);
+      if (!perf) return;
+      generatePdfForPerformance(perf).catch(err => {
+        console.error("PDF generation failed:", err);
+        alert(
+          "The PDF could not be generated. Check that 'Christmas Show Report Template.pdf' is in the same folder as index.html."
+        );
+      });
     });
 
-    toggleReportBtn.addEventListener("click", () => {
-      liveView.style.display = "none";
-      reportView.style.display = "block";
-      renderReport();
-    });
-
-    backToLiveBtn.addEventListener("click", () => {
-      liveView.style.display = "block";
-      reportView.style.display = "none";
-    });
-
-    // --- Initial render ---
-    function renderAll() {
-      renderShowsList();
-      renderCurrentShowHeader();
-      renderTimer();
-      renderScenes();
-      renderShowStops();
-      renderNotes();
-    }
-
+    // ---------- Initial render ----------
     renderAll();
   </script>
 </body>
